@@ -117,24 +117,48 @@ Exit:
 IterativeMax:
     #TODO: write your code here, $a0 stores the address of the array, $a1 stores the length of the array
 
-    #allocate 4 positions in the $sp
-    addiu $sp $sp -16
+    #allocate 4 positions in the $sp (and 1 also for the $ra)
+    addiu $sp $sp -20
 
     #store s register stuff in the stack pointer
     sw $s0 0($sp)
     sw $s1 4($sp)
     sw $s2 8($sp)
     sw $s3 12($sp)
+    sw $ra 16($sp)  # $ra - VERY important
 
     #store the current index and the current max number in the s registers
 
-    li $s0 -2147483648       #max num - initialize to very negative value, ie -2^31
-    li $s1 0                 #curr indx
-    la $s2 $a0               #the array
-    la $s3 $a1               #size of the array
+    li $s0 -2147483647               #-2147483648 doesn't work #max num - initialize to very negative value, ie -2^31
+    li $s1 0                   #curr indx
+    move $s2 $a0               #the array
+    move $s3 $a1               #size of the array
+
+    #debug stuff:
+    #print out size of array:
+    #move $a0 $s3
+    #li $v0 1
+    #syscall
+
+    #newline
+    #la $a0 newline
+    #li $v0 4
+    #syscall
 
     #loop
     loop:
+
+    #debug stuff:
+    #print out current index before evaluation here:
+    #move $a0 $s1
+    #li $v0 1
+    #syscall
+
+    #newline
+    #la $a0 newline
+    #li $v0 4
+    #syscall
+
     bge $s1 $s3 loopend
         #load curr value into t0
         lw $t0 0($s2)
@@ -149,7 +173,7 @@ IterativeMax:
         syscall
 
         #now inside loop, if-check:
-        ble $s0 $t0 ifend
+        ble $t0 $s0 ifend
             #now inside the if, change value of $s0 with $t0
             move $s0 $t0
         ifend:
@@ -159,12 +183,13 @@ IterativeMax:
         
         #print current max value
         li $v0 1
-        move $a0 $s0
+        move $a0 $s0 #copying what is in s0
         syscall
 
-        #newline
-        li $v0 4
-        la $a0 newline syscall
+        #newline - apparently not needed
+        #li $v0 4
+        #la $a0 newline 
+        #syscall
 
         #call the messer upper function
         jal ConventionCheck
@@ -177,6 +202,9 @@ IterativeMax:
     lw $s1 4($sp)
     lw $s2 8($sp)
     lw $s3 12($sp)
+    lw $ra 16($sp) #apparently this is extremely important if calling funcs from within another func
+
+    addiu $sp $sp 20
 
     #aaaaand now exit!
     # Do not remove this line
