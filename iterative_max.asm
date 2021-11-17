@@ -117,5 +117,67 @@ Exit:
 IterativeMax:
     #TODO: write your code here, $a0 stores the address of the array, $a1 stores the length of the array
 
+    #allocate 4 positions in the $sp
+    addiu $sp $sp -16
+
+    #store s register stuff in the stack pointer
+    sw $s0 0($sp)
+    sw $s1 4($sp)
+    sw $s2 8($sp)
+    sw $s3 12($sp)
+
+    #store the current index and the current max number in the s registers
+
+    li $s0 -2147483648       #max num - initialize to very negative value, ie -2^31
+    li $s1 0                 #curr indx
+    la $s2 $a0               #the array
+    la $s3 $a1               #size of the array
+
+    #loop
+    loop:
+    bge $s1 $s3 loopend
+        #load curr value into t0
+        lw $t0 0($s2)
+        #print out current value of the array
+        li $v0 1
+        move $a0 $t0
+        syscall
+
+        #newline
+        li $v0 4
+        la $a0 newline
+        syscall
+
+        #now inside loop, if-check:
+        ble $s0 $t0 ifend
+            #now inside the if, change value of $s0 with $t0
+            move $s0 $t0
+        ifend:
+
+        addiu $s2 $s2 4     #increment the array pointer
+        addu $s1 $s1 1      #increment curr index
+        
+        #print current max value
+        li $v0 1
+        move $a0 $s0
+        syscall
+
+        #newline
+        li $v0 4
+        la $a0 newline syscall
+
+        #call the messer upper function
+        jal ConventionCheck
+
+
+    j loop #restart loop
+    loopend:
+    #now time to restore s registers and reset stack pointer back to the original position
+    lw $s0 0($sp)
+    lw $s1 4($sp)
+    lw $s2 8($sp)
+    lw $s3 12($sp)
+
+    #aaaaand now exit!
     # Do not remove this line
     jr      $ra
