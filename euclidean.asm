@@ -199,5 +199,67 @@ PrintEuclidean:
     # $a1 stores the address of the arrayQ 
     # $a2 stores the n in given n-dimensional Euclidean space
 	
-    # Do not remove this line
+    #first, store all the stuff that should not be overwritten in the stack
+    #increment the stack pointer:
+    addiu $sp $sp -24
+    sw $s0 0($sp)   #array of Ps
+    sw $s1 4($sp)   #array of Qs
+    sw $s2 8($sp)   #n dimentions, essentially the # of times the thing should loop for
+    sw $s3 12($sp)  #holds # of times eclid func has looped
+    sw $s4 16($sp)  #holds value so far
+    sw $ra 20($sp)  #especially important
+
+    li $s3 0
+    li $s4 0
+
+    #both Squared and SquareRoot does the stuff on a0 and leaves the end value in v0, keep in mind when jal-ing
+    #therefore, I will store temp P - Q value in a0
+
+    euclidLoop:
+
+    #check to terminate loop
+    bge $s3 $s2 loopEnd
+
+        sw $t0 0($s0)   #value of curr P
+        sw $t1 0($s1)   #value of curr Q
+
+        #store P - Q in a0 and then jal the sqrt func
+        sub $a0 $t0 $t1
+        jal Squared
+        #now the squared result is in $v0, so += it into $s4
+        add $s4 $s4 $v0
+
+        #also, print out the curr value of (P-Q)^2
+        move $a0 $v0
+        li $v0 1
+        syscall
+
+        #after-main-action incrementing:
+        addiu $s0 $s0 4
+        addiu $s1 $s1 4
+        addu $s3 $s3 1
+
+    j euclidLoop
+
+    loopEnd:
+    #time to square the end value, and restore everything as well
+    #remember to put final end value in the $v0 register
+
+    move $a0 $s4
+    jal SquareRoot
+
+    #since the value of the final end value is still in $v0, no need to move it anywhere
+
+    #restore all the schizz:
+    lw $s0 0($sp)
+    lw $s1 4($sp)
+    lw $s2 8($sp)
+    lw $s3 12($sp)
+    lw $s4 16($sp)
+    lw $ra 20($sp)
+
+    #restore where the stack pointer is
+    addiu $sp $sp 24
+
+    # Do not remove this line - kk boss
     jr      $ra
