@@ -3,6 +3,18 @@
 #  Data Area
 .data
 
+#debug stuff:
+p_value:
+    .asciiz "\nValue of current P: \n"
+
+q_value:
+    .asciiz "Value of current Q: \n"
+
+psubq_value:
+    .asciiz "Value of P - Q \n"
+
+#end debug stuff
+
 space:
     .asciiz " "
 
@@ -209,7 +221,10 @@ PrintEuclidean:
     sw $s4 16($sp)  #holds value so far
     sw $ra 20($sp)  #especially important
 
-    li $s3 0
+    move $s0 $a0    #P array
+    move $s1 $a1    #Q array
+    move $s2 $a2    #size of both arrays
+    li $s3 0        
     li $s4 0
 
     #both Squared and SquareRoot does the stuff on a0 and leaves the end value in v0, keep in mind when jal-ing
@@ -220,11 +235,55 @@ PrintEuclidean:
     #check to terminate loop
     bge $s3 $s2 loopEnd
 
-        sw $t0 0($s0)   #value of curr P
-        sw $t1 0($s1)   #value of curr Q
+        lw $t0 0($s0)   #value of curr P
+        lw $t1 0($s1)   #value of curr Q
+        
+        #debug stuff:
+        #print out curr value of P:
+        #la $a0 p_value
+        #li $v0 4
+        #syscall
+
+        #move $a0 $t0
+        #li $v0 1
+        #syscall
+
+        #newline
+        #la $a0 newline
+        #li $v0 4
+        #syscall
+
+        #print out curr value of Q
+
+        #la $a0 q_value
+        #li $v0 4
+        #syscall
+
+        #move $a0 $t1
+        #li $v0 1
+        #syscall
+
+        #newline
+        #la $a0 newline
+        #li $v0
+        #syscall
 
         #store P - Q in a0 and then jal the sqrt func
         sub $a0 $t0 $t1
+
+        #debug stuff
+        #move $t2 $a0
+
+        #la $a0 psubq_value
+        #li $v0 4
+        #syscall
+
+        #print out value of P - Q
+        #move $a0 $t1
+        #li $v0 1
+        #syscall
+        #move $a0 $t2
+
         jal Squared
         #now the squared result is in $v0, so += it into $s4
         add $s4 $s4 $v0
